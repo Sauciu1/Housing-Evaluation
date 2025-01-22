@@ -1,8 +1,11 @@
 # Shalom fuckers
-This is a tool for making the correct housing decisions that I made in afternoon.
+This is a tool for making the correct housing decisions that I made in todays afternoon.
+
 It allows to estimate travel times and assign goodness scores (TBD) to different locations.
 
-We could have done it manually, but I'll be damned if I gotta perform the same action twice. 
+We could have done it manually, but I'll be damned if I gotta perform the same action twice.
+
+What can I say - if yours truly spends 6 days a week surround by autists, something is bound to rub off. 
 
 # How to use
 See the [main.ipynb](main.ipynb) for how it works.
