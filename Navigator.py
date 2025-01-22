@@ -1,6 +1,6 @@
 import googlemaps
 import duckdb as ddb
-from datetime import datetime 
+from datetime import datetime, timedelta
 import json
 from get_key import get_key
 
@@ -15,14 +15,25 @@ class Navigator:
     def _set_time(time_of_day="day"):
         """Allows to account for day and night Public Transport differing"""
         if time_of_day == "day":
-            departure_time = datetime.now().replace(hour=9, minute=0, second=0, microsecond=0)
+            departure_time = (datetime.now().replace(hour=9, minute=0, second=0, microsecond=0) + timedelta(days=2))
         elif time_of_day == "night":
-            departure_time = datetime.now().replace(hour=3, minute=0, second=0, microsecond=0)
+            departure_time = (datetime.now().replace(hour=3, minute=0, second=0, microsecond=0) + timedelta(days=2))
         elif time_of_day == "now":
             departure_time = datetime.now()
         else:
             raise ValueError("Invalid option chosen")
         return departure_time
+    
+    @staticmethod
+    def _process_duration(duration_text):
+            duration_parts = duration_text.split()
+            if 'hour' in duration_parts:
+                hours = int(duration_parts[0])
+                minutes = int(duration_parts[2]) if len(duration_parts) > 2 else 0
+                duration = hours * 60 + minutes
+            else:
+                duration = int(duration_parts[0])
+            return duration
 
     def _directions_call(self, origin: str, destination: str, mode: str, time_of_day: str):
         """Make the call to gmaps api and process the result"""
@@ -33,8 +44,9 @@ class Navigator:
             departure_time=self._set_time(time_of_day))
 
         if directions:
-            duration = int(directions[0]['legs'][0]['duration']['text'].replace("mins", ""))
+            duration = self._process_duration(directions[0]['legs'][0]['duration']['text'])
             distance = float(directions[0]['legs'][0]['distance']['text'].replace("km", ""))
+
             return {
                 "duration": duration,
                 "distance": distance,
@@ -70,7 +82,7 @@ class Navigator:
 
         
 
-    def get_directions(self, origin, destination, mode="transit", time_of_day="day"):
+    def get_directions(self, origin:str, destination:str, mode="transit", time_of_day="day")->dict:
         """Choose whether information exists or needs to be called"""
 
         query = '''
@@ -85,8 +97,9 @@ class Navigator:
             "distance": existing_entry[1],
             "origin": existing_entry[2],
             "destination": existing_entry[3],
-            "mode": existing_entry[4],
-            "time_of_day": existing_entry[5],
+            "time_of_day": existing_entry[4],
+            "mode": existing_entry[5],
+            
             "directions": json.loads(existing_entry[6])
             }
 
